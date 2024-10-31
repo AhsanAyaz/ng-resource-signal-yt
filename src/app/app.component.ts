@@ -1,13 +1,63 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  Injector,
+  linkedSignal,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { TodoListComponent } from './components/todo-list/todo-list.component';
+import { TodoDetailsComponent } from './components/todo-details/todo-details.component';
+import { Comment, Post, PostService } from './services/post.service';
+import { firstValueFrom } from 'rxjs';
+import { User, USERS } from './constants/users';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, TodoListComponent, TodoDetailsComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  title = 'ng-resource-signals-yt';
+  postService = inject(PostService);
+  injector = inject(Injector);
+  comments = signal<Comment[]>([]);
+  users = signal(USERS);
+  selectedUser = signal<User>(USERS[0]);
+  posts = signal<Post[]>([]);
+  loadingPosts = signal<boolean>(false);
+  loadingComments = signal<boolean>(false);
+
+  selectedPost: WritableSignal<Post | null> = linkedSignal({
+    source: this.selectedUser,
+    computation: () => null,
+  });
+
+  getUserPosts = effect(async () => {
+    const user = this.selectedUser();
+    this.loadingPosts.set(true);
+    const posts = await firstValueFrom(this.postService.getPosts(user.id));
+    this.posts.set(posts);
+    this.loadingPosts.set(false);
+  });
+
+  getPostComments = effect(async () => {
+    const post = this.selectedPost();
+    if (!post) {
+      return;
+    }
+    this.loadingComments.set(true);
+    const comments = await firstValueFrom(
+      this.postService.getPostComments(post.id)
+    );
+    this.comments.set(comments);
+    this.loadingComments.set(false);
+  });
+
+  postClick(post: Post) {
+    this.selectedPost.set(post);
+  }
 }

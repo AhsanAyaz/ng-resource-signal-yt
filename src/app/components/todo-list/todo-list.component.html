@@ -1,0 +1,13 @@
+<ul class="menu w-full rounded-box">
+  @if (posts()) { @for (post of posts(); track $index) {
+  <li (click)="selectPost(post)">
+    <a
+      [ngClass]="{
+        'bg-primary text-primary-content hover:bg-primary hover:text-primary-content':
+          post.id === selectedPost()?.id
+      }"
+      >{{ post.title }}</a
+    >
+  </li>
+  } }
+</ul>
