@@ -8,6 +8,8 @@
       <span
         class="loading loading-spinner loading-md mt-10 mx-auto block"
       ></span>
+      } @else if(loadingCommentsError()) {
+      <app-alert [message]="loadingCommentsError()" />
       } @else { @for (comment of comments(); track $index) {
       <li class="menu-item">
         <a>{{ comment.body }}</a>
