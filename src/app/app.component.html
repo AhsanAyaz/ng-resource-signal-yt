@@ -31,12 +31,14 @@
   </div>
   <section class="flex-1 flex w-full gap-4 h-full">
     <section class="w-56 overflow-y-auto bg-base-200">
-      @if(loadingPosts()) {
+      @if(userPosts.isLoading()) {
       <span
         class="loading loading-spinner loading-md mt-10 mx-auto block"
       ></span>
+      } @else if(userPosts.error()) {
+      <app-alert [message]="userPosts.error()" />
       } @else {<app-todo-list
-        [posts]="posts()"
+        [posts]="userPosts.value()"
         (postChanged)="postClick($event)"
         [selectedPost]="selectedPost()"
         class="flex flex-col w-52 bg-base-200"
@@ -47,8 +49,9 @@
     @if (selectedPost(); as post) {
     <app-todo-details
       [post]="post"
-      [loadingComments]="loadingComments()"
-      [comments]="comments()"
+      [loadingComments]="postComments.isLoading()"
+      [comments]="postComments.value() || []"
+      [loadingCommentsError]="postComments.error()"
       class="flex-1 block"
     />
     } @else {
